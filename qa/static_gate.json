@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "result": "PASS",
+  "scanned_sources": 333,
+  "violations": [],
+  "answer_sheets": [
+    "交付物答案清单",
+    "固定字段答案",
+    "固定集合答案",
+    "固定数值答案",
+    "允许变体答案"
+  ],
+  "specification_sheets": [
+    "任务规格转化"
+  ],
+  "task_spec_columns": [
+    "模块",
+    "规格内容"
+  ],
+  "declared_delivery_paths": [
+    "output/appeal_thread_audit.db",
+    "output/reports/audit_summary.json",
+    "output/reports/quality_exceptions.csv",
+    "output/reports/rule_rollup.csv",
+    "output/reports/sla_report.csv",
+    "output/reports/thread_summary.csv",
+    "output/sql/rebuild_appeal_audit.sql"
+  ],
+  "reference_paths": [
+    "output/appeal_thread_audit.db",
+    "output/reports/audit_summary.json",
+    "output/reports/quality_exceptions.csv",
+    "output/reports/rule_rollup.csv",
+    "output/reports/sla_report.csv",
+    "output/reports/thread_summary.csv",
+    "output/sql/rebuild_appeal_audit.sql"
+  ]
+}

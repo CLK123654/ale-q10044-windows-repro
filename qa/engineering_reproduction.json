@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "table_profile": "ale218",
+  "result": "PASS",
+  "task_slug": "sqlite_appeal_thread_sla_audit",
+  "artifacts": {
+    "输入数据包.zip": {
+      "sha256": "372cac4d82a804a1cdb9b55eab1465d00e003f6c31fbd128f6ed80de82e47bb6"
+    },
+    "reference.zip": {
+      "sha256": "d45ebde02728c626d412e2739a46d681f23cc18e500995518aa99e84d160bcfa"
+    },
+    "关键标准答案.xlsx": {
+      "sha256": "cca2b5abf47ba5163d6c4e5e35e703c63e271c70160b8a3d932608193a930f0d"
+    },
+    "任务规格转化.xlsx": {
+      "sha256": "0f782108e491327e816c74bb0d5b0b984318b694716fd63618a444160f8f8593"
+    }
+  },
+  "primary_software": {
+    "name": "SQLite",
+    "version": "3.43.2 2023-10-10 13:08:14 1b37c146ee9ebb7acd0160c0ab1fd11017a419fa8a3187386ed8cb32b709aapl (64-bit)",
+    "executed": true
+  },
+  "clean_room_runs": [
+    {
+      "root_id": "运营 审计甲",
+      "command": "npm run audit",
+      "timeout_seconds": 30,
+      "return_code": 0,
+      "output_started_empty": true,
+      "primary_software_executed": true,
+      "input_unchanged": true,
+      "reference_match": true,
+      "process_runs": 2,
+      "generated_paths": [
+        "output/appeal_thread_audit.db",
+        "output/sql/rebuild_appeal_audit.sql",
+        "output/reports/thread_summary.csv",
+        "output/reports/sla_report.csv",
+        "output/reports/rule_rollup.csv",
+        "output/reports/quality_exceptions.csv",
+        "output/reports/audit_summary.json"
+      ]
+    },
+    {
+      "root_id": "运营 审计乙",
+      "command": "npm run audit",
+      "timeout_seconds": 30,
+      "return_code": 0,
+      "output_started_empty": true,
+      "primary_software_executed": true,
+      "input_unchanged": true,
+      "reference_match": true,
+      "process_runs": 2,
+      "generated_paths": [
+        "output/appeal_thread_audit.db",
+        "output/sql/rebuild_appeal_audit.sql",
+        "output/reports/thread_summary.csv",
+        "output/reports/sla_report.csv",
+        "output/reports/rule_rollup.csv",
+        "output/reports/quality_exceptions.csv",
+        "output/reports/audit_summary.json"
+      ]
+    }
+  ],
+  "positive_mutations": [
+    {
+      "name": "开放线程截止时间从14时改为15时",
+      "input_changed": true,
+      "behavior_changed": true,
+      "assertions_passed": true,
+      "observed_change": "T104的response_minutes从180变为240，其余已响应线程不变"
+    }
+  ],
+  "negative_cases": [
+    {
+      "name": "trust队列责任映射缺失",
+      "return_code": 1,
+      "failed_closed": true,
+      "no_stale_deliverables": true
+    }
+  ],
+  "line_ending_reproduction": {
+    "lf_final_input_passed": true,
+    "crlf_variant_passed": true,
+    "sqlite_native_loader_executed": true
+  },
+  "forbidden_shortcuts": {
+    "no_precomputed_outputs": true,
+    "no_case_id_hardcoding": true,
+    "no_static_only_substitute": true,
+    "no_authoring_directory_dependency": true
+  },
+  "windows_native_reproduction": {
+    "required": true,
+    "windows_command": "npm run audit",
+    "original_data_paths": [
+      "input_data/database/content_appeals.db",
+      "input_data/rules/report_contract.json",
+      "input_data/rules/queue_assignments.csv"
+    ],
+    "windows_software_operations": [
+      "SQLite CLI使用.import读取队列CSV",
+      "SQLite执行WITH RECURSIVE和json_each",
+      "SQLite使用unixepoch计算UTC分钟并由.once导出报告"
+    ],
+    "linux_executables": [],
+    "linux_executables_executed": false,
+    "reproduced_after_linux_executables_removed": true,
+    "reference_match_after_removal": true,
+    "no_wsl_required": true,
+    "no_linux_container_required": true,
+    "no_posix_shell_required": true,
+    "no_unix_only_api_required": true,
+    "cross_platform_paths": true,
+    "actual_windows_run": false
+  }
+}

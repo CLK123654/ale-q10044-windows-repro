@@ -1,0 +1,51 @@
+name: windows-2025-sqlite-reproduction
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install SQLite 3.51.2
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'sqlite-tools-win-x64-3510200.zip'
+          $destination = Join-Path $env:RUNNER_TEMP 'sqlite-3510200'
+          Invoke-WebRequest -Uri 'https://www.sqlite.org/2025/sqlite-tools-win-x64-3510200.zip' -OutFile $archive -MaximumRetryCount 3
+          Expand-Archive -LiteralPath $archive -DestinationPath $destination -Force
+          $sqlite = Get-ChildItem -LiteralPath $destination -Recurse -Filter sqlite3.exe | Select-Object -First 1
+          if ($null -eq $sqlite) { throw 'sqlite3.exe not found' }
+          Add-Content -LiteralPath $env:GITHUB_ENV -Value ('SQLITE3_PATH=' + $sqlite.FullName)
+          & $sqlite.FullName --version
+          if ($LASTEXITCODE -ne 0) { throw 'sqlite3 version check failed' }
+
+      - name: Run independent Windows gate
+        shell: pwsh
+        run: |
+          ./scripts/windows_gate.ps1 `
+            -RepositoryRoot $env:GITHUB_WORKSPACE `
+            -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'ale-evidence')
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-2025-evidence
+          path: ${{ runner.temp }}/ale-evidence
+          if-no-files-found: error
+          retention-days: 30

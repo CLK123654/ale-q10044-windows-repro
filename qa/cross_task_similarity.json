@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "gate": "cross_task_similarity",
+  "comparison_count": 217,
+  "same_software_comparison_count": 45,
+  "method": "NFKC归一化后计算标题3字片段和正文5字片段Dice相似度",
+  "thresholds": {
+    "title": 0.72,
+    "body": 0.55
+  },
+  "maximum_observed": {
+    "title": 0.2326,
+    "body": 0.0638
+  },
+  "threshold_hit_count": 0,
+  "pass": true,
+  "final_global_rescan_required": true
+}

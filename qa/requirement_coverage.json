@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "result": "PASS",
+  "requirements": [
+    {
+      "requirement": "归并父链并隔离缺失父级和循环引用",
+      "prompt_evidence": "任务Prompt第二段",
+      "input_source": "database/content_appeals.db与rules/report_contract.json",
+      "reference_evidence": "output/appeal_thread_audit.db与output/reports/quality_exceptions.csv",
+      "scoring_item": "检查项三"
+    },
+    {
+      "requirement": "展开事件规则并按根线程汇总",
+      "prompt_evidence": "任务Prompt第二段",
+      "input_source": "ticket_event.payload_json与rule_catalog",
+      "reference_evidence": "output/reports/rule_rollup.csv",
+      "scoring_item": "检查项四"
+    },
+    {
+      "requirement": "把队列映射到责任团队",
+      "prompt_evidence": "任务Prompt第二段",
+      "input_source": "rules/queue_assignments.csv",
+      "reference_evidence": "output/reports/thread_summary.csv",
+      "scoring_item": "检查项四"
+    },
+    {
+      "requirement": "按UTC计算响应与解决时效",
+      "prompt_evidence": "任务Prompt第二段",
+      "input_source": "rules/report_contract.json、ticket_event与sla_policy",
+      "reference_evidence": "output/reports/sla_report.csv",
+      "scoring_item": "检查项五"
+    },
+    {
+      "requirement": "数据库与报告跨文件一致",
+      "prompt_evidence": "任务Prompt第三段",
+      "input_source": "三份业务输入",
+      "reference_evidence": "output/reports/audit_summary.json与output/appeal_thread_audit.db",
+      "scoring_item": "检查项六"
+    }
+  ],
+  "unscored_requirements": [],
+  "extra_scoring_requirements": []
+}

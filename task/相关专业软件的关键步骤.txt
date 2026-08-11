@@ -1,0 +1,9 @@
+1. 在input_data目录用sqlite3打开content_appeals.db，查看appeal_ticket、ticket_event、rule_catalog和sla_policy的结构与业务字段。
+2. 把starter中的占位SQL保存为output/sql/rebuild_appeal_audit.sql，定义派生表重建事务和输出结构。
+3. 使用WITH RECURSIVE为每张工单追溯父链，通过分隔路径识别重复节点，并找出无法命中父记录的链。
+4. 从有效工单建立ticket_id到root_ticket_id映射，把父链异常写入quality_exceptions并排除在正式统计外。
+5. 使用json_each展开事件中的rule_hits，关联rule_catalog取得类别、优先级和自动升级标记。
+6. 把工单队列关联运行入口导入的queue_assignments，在线程摘要中输出去重排序后的队列与责任团队。
+7. 从report_contract导入表读取首次响应动作、终态动作和截止时间，用unixepoch计算整数分钟并关联sla_policy。
+8. 创建thread_summary、sla_report、rule_rollup、quality_exceptions和audit_summary，通过.once导出四份CSV与一份JSON。
+9. 执行npm run audit，使用SQLite查询复核根线程、责任归属、时效结果和审计摘要。
