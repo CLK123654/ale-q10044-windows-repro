@@ -30,7 +30,7 @@ jobs:
         run: |
           $archive = Join-Path $env:RUNNER_TEMP 'sqlite-tools-win-x64-3510200.zip'
           $destination = Join-Path $env:RUNNER_TEMP 'sqlite-3510200'
-          Invoke-WebRequest -Uri 'https://www.sqlite.org/2025/sqlite-tools-win-x64-3510200.zip' -OutFile $archive -MaximumRetryCount 3
+          Invoke-WebRequest -Uri 'https://www.sqlite.org/2026/sqlite-tools-win-x64-3510200.zip' -OutFile $archive -MaximumRetryCount 3
           Expand-Archive -LiteralPath $archive -DestinationPath $destination -Force
           $sqlite = Get-ChildItem -LiteralPath $destination -Recurse -Filter sqlite3.exe | Select-Object -First 1
           if ($null -eq $sqlite) { throw 'sqlite3.exe not found' }
