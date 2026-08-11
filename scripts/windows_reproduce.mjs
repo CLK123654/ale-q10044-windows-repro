@@ -21,7 +21,6 @@ const answerBook = path.join(artifactsRoot, '关键标准答案.xlsx');
 const specificationBook = path.join(artifactsRoot, '任务规格转化.xlsx');
 const candidateSql = path.join(repositoryRoot, 'candidate', 'rebuild_appeal_audit.sql');
 const sqlitePath = process.env.SQLITE3_PATH;
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'ale-sqlite-audit-'));
 const referenceRoot = path.join(sandbox, '参考 输出');
 fs.mkdirSync(evidenceRoot, { recursive: true });
@@ -186,7 +185,11 @@ function prepareRun(name) {
 }
 
 function executeAudit(inputRoot) {
-  return run(npmCommand, ['run', 'audit'], {
+  const command = process.platform === 'win32' ? (process.env.ComSpec ?? 'cmd.exe') : 'npm';
+  const args = process.platform === 'win32'
+    ? ['/d', '/s', '/c', 'npm.cmd', 'run', 'audit']
+    : ['run', 'audit'];
+  return run(command, args, {
     cwd: inputRoot,
     env: { ...process.env, SQLITE3_PATH: sqlitePath },
     timeout: 30_000,
