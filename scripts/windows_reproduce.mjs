@@ -60,8 +60,15 @@ function writeEvidence(name, value) {
 
 function extract(zip, destination) {
   fs.mkdirSync(destination, { recursive: true });
-  const command = 'param($Source,$Destination) Expand-Archive -LiteralPath $Source -DestinationPath $Destination -Force';
-  const result = run('pwsh', ['-NoProfile', '-NonInteractive', '-Command', command, zip, destination], { timeout: 30_000 });
+  const command = 'Expand-Archive -LiteralPath $env:ALE_ZIP_SOURCE -DestinationPath $env:ALE_ZIP_DESTINATION -Force';
+  const result = run('pwsh', ['-NoProfile', '-NonInteractive', '-Command', command], {
+    env: {
+      ...process.env,
+      ALE_ZIP_SOURCE: zip,
+      ALE_ZIP_DESTINATION: destination,
+    },
+    timeout: 30_000,
+  });
   if (result.status !== 0) throw new Error(`Archive extraction failed for ${path.basename(zip)}\n${result.stderr}`);
 }
 
