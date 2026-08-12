@@ -1,4 +1,7 @@
+总分100分
+
 检查项：交付物结构和源表保全
+分值：16分
 标准答案：output中包含appeal_thread_audit.db、sql/rebuild_appeal_audit.sql及reports下的thread_summary.csv、sla_report.csv、rule_rollup.csv、quality_exceptions.csv、audit_summary.json。派生数据库保留appeal_ticket、ticket_event、rule_catalog和sla_policy，并新增thread_summary、sla_report、rule_rollup、quality_exceptions和audit_summary。
 关键字段：output/appeal_thread_audit.db、output/sql/rebuild_appeal_audit.sql、output/reports
 容差：交付路径来自任务Prompt；SQL缩进、注释和临时对象名称可以不同。
@@ -10,6 +13,7 @@
 所属层级：L1任务指令遵循层
 
 检查项：业务输入消费和SQLite执行
+分值：16分
 标准答案：运行入口读取content_appeals.db、report_contract.json和queue_assignments.csv，把规则合同与队列映射导入同一SQLite会话，并由sqlite3或sqlite3.exe执行交付SQL。Node.js只负责输入准备、进程调用和文件收尾。
 关键字段：input_data/database/content_appeals.db、input_data/rules/report_contract.json、input_data/rules/queue_assignments.csv、input_data/tools/run-task.mjs
 容差：SQLite可执行文件可从PATH或SQLITE3_PATH取得；辅助变量、函数和临时表名称可以变化。
@@ -21,6 +25,7 @@
 所属层级：L2软件或工具操作层
 
 检查项：父链归并和异常隔离
+分值：18分
 标准答案：SQL沿parent_ticket_id向上追溯根工单。父级缺失与父链循环分别使用report_contract.json规定的issue_code写入quality_exceptions；异常工单不进入线程、规则或SLA结果。
 关键字段：output/sql/rebuild_appeal_audit.sql、output/appeal_thread_audit.db中的quality_exceptions和thread_summary
 容差：按ticket_id比较集合，行序不计分；异常代码来自rules/report_contract.json，工单关系来自appeal_ticket.parent_ticket_id。
@@ -32,6 +37,7 @@
 所属层级：L4数据清洗与质量控制层
 
 检查项：规则展开和责任团队关联
+分值：18分
 标准答案：SQL用json_each展开payload_json中的rule_hits并关联rule_catalog。rule_rollup按priority降序、rule_code升序，分别统计工单、根线程、事件和自动升级次数。thread_summary中的队列来自有效工单，责任团队由queue_assignments.csv关联取得。
 关键字段：output/sql/rebuild_appeal_audit.sql、reports/rule_rollup.csv、reports/thread_summary.csv、rules/queue_assignments.csv
 容差：线程和规则按业务主键比较，CSV行序不计分；计数不设容差，来源为ticket_event.payload_json、rule_catalog和队列映射。
@@ -43,6 +49,7 @@
 所属层级：L5多源关联与字段一致性层
 
 检查项：线程摘要和SLA时效
+分值：20分
 标准答案：thread_summary按root_ticket_id保留一行，成员、开放状态、严重级别、地区、队列、责任团队、事件边界和规则命中都从该线程的有效工单计算。sla_report从线程最早创建时间计算首次响应和最后终态；开放且未响应的线程使用report_cutoff_utc，阈值取自sla_policy。
 关键字段：reports/thread_summary.csv、reports/sla_report.csv、appeal_ticket、ticket_event、sla_policy
 容差：分钟按UTC整分计算，不设数值容差；记录按root_ticket_id比较，阈值来自sla_policy，开放线程截止时间来自report_contract.json。
@@ -54,6 +61,7 @@
 所属层级：L6领域计算与专业规则层
 
 检查项：审计摘要和跨文件对账
+分值：12分
 标准答案：audit_summary.json的report_cutoff_utc与report_contract.json一致。source记录工单、事件和队列映射行数；result记录有效线程、有效工单、异常、规则、SLA、超时和自动升级数量。每项计数都能从数据库或对应CSV复算。
 关键字段：reports/audit_summary.json、四份CSV和appeal_thread_audit.db中的audit_summary
 容差：JSON键序不计分，整数和UTC时间不设容差；所有计数可从数据库与CSV复算。
