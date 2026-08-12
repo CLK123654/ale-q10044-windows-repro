@@ -3,7 +3,9 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$RepositoryRoot,
   [Parameter(Mandatory = $true)]
-  [string]$EvidenceRoot
+  [string]$EvidenceRoot,
+  [Parameter(Mandatory = $true)]
+  [string]$ReferenceBuildRoot
 )
 
 $ErrorActionPreference = 'Stop'
@@ -129,6 +131,7 @@ function Assert-NaturalText {
   $boundary = "(?:$han$space[A-Za-z0-9]|[A-Za-z0-9]$space$han|[A-Za-z]$space[0-9]|[0-9]$space[A-Za-z])"
   $riskTerms = @('此外', '至关重要', '深入探讨', '彰显', '赋能', '无缝', '不断演变的格局', '不仅', '不只是', '值得注意的是', '专家认为', '行业报告显示', '观察者指出', '未来展望', '挑战与未来', '——')
   $processTerms = @('制题返修', '去AI', '修改题目', '规则调整', 'Windows复现', 'GitHub Actions', '双干净目录', '动态变化', '负例', '附件哈希', '飞书回读')
+  $answerControlTerms = @('Reference', 'reference.zip', 'reference_members', 'validation', '自证', '固定控制量', '控制量', '不变量', '连续运行', '重复运行', '双空目录', '动态改参', '失败清理', '失败关闭', '清理未完成', '预制内容', '预生成', '判卷', '验收', '制题')
   foreach ($text in $Texts) {
     foreach ($character in $quoteCharacters) {
       Assert-True (-not $text.Contains([string]$character)) "$Label contains a forbidden quote"
@@ -136,6 +139,9 @@ function Assert-NaturalText {
     Assert-True (-not [regex]::IsMatch($text, $boundary)) "$Label contains a mixed boundary space"
     foreach ($term in ($riskTerms + $processTerms)) {
       Assert-True (-not $text.Contains($term)) "$Label contains forbidden term $term"
+    }
+    foreach ($term in $answerControlTerms) {
+      Assert-True (-not $text.Contains($term)) "$Label contains answer-control term $term"
     }
   }
 }
@@ -177,12 +183,14 @@ Assert-SpecificationShape (Join-Path $ArtifactsRoot '任务规格转化.xlsx')
 
 $taskTexts = @(Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot 'task') -File -Filter '*.txt' | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw })
 Assert-NaturalText $taskTexts 'task text'
+$scoreText = Get-Content -LiteralPath (Join-Path $RepositoryRoot 'task/评分表.txt') -Raw
+Assert-True (-not [regex]::IsMatch($scoreText, 'T\d{3}|集合为|依次为|正确值为|\d+(?:、\d+){2,}')) 'score table contains sample answer values'
 Assert-NoPublicMetadata
 
 Assert-True (-not [string]::IsNullOrWhiteSpace($env:SQLITE3_PATH)) 'SQLITE3_PATH is missing'
 Assert-True (Test-Path -LiteralPath $env:SQLITE3_PATH -PathType Leaf) 'sqlite3 executable is missing'
 $nodeScript = Join-Path $RepositoryRoot 'scripts/windows_reproduce.mjs'
-& node $nodeScript --repository-root $RepositoryRoot --evidence-root $EvidenceRoot
+& node $nodeScript --repository-root $RepositoryRoot --evidence-root $EvidenceRoot --reference-build-root $ReferenceBuildRoot
 $nodeExit = $LASTEXITCODE
 Assert-True ($nodeExit -eq 0) "Windows reproduction failed with exit code $nodeExit"
 

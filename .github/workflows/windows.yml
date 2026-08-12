@@ -43,7 +43,8 @@ jobs:
         run: |
           ./scripts/windows_gate.ps1 `
             -RepositoryRoot $env:GITHUB_WORKSPACE `
-            -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'ale-evidence')
+            -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'ale-evidence') `
+            -ReferenceBuildRoot (Join-Path $env:RUNNER_TEMP 'ale-reference-build')
 
       - name: Upload evidence
         if: always()
@@ -53,3 +54,12 @@ jobs:
           path: ${{ runner.temp }}/ale-evidence
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload rebuilt delivery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuilt-delivery
+          path: ${{ runner.temp }}/ale-reference-build/output
+          if-no-files-found: error
+          retention-days: 1

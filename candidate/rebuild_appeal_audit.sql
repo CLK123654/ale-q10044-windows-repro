@@ -370,58 +370,7 @@ INSERT INTO audit_summary VALUES
   ('result.sla_rows', (SELECT COUNT(*) FROM sla_report)),
   ('result.response_breaches', (SELECT COALESCE(SUM(response_breached), 0) FROM sla_report)),
   ('result.resolve_breaches', (SELECT COALESCE(SUM(resolve_breached), 0) FROM sla_report)),
-  ('result.auto_escalate_hits', (SELECT COALESCE(SUM(auto_escalate_hits), 0) FROM thread_summary)),
-  (
-    'check.all_queues_mapped',
-    (
-      SELECT CAST(NOT EXISTS (
-        SELECT 1
-        FROM _valid_ticket_map AS members
-        JOIN appeal_ticket AS ticket USING (ticket_id)
-        LEFT JOIN runtime_queue_assignment AS assignment USING (queue)
-        WHERE assignment.owner_team IS NULL
-      ) AS TEXT)
-    )
-  ),
-  (
-    'check.exceptions_excluded',
-    (
-      SELECT CAST(NOT EXISTS (
-        SELECT 1
-        FROM quality_exceptions AS exception
-        JOIN _valid_ticket_map AS members USING (ticket_id)
-      ) AS TEXT)
-    )
-  ),
-  (
-    'check.thread_sla_roots_match',
-    (
-      SELECT CAST(
-        NOT EXISTS (
-          SELECT root_ticket_id FROM thread_summary
-          EXCEPT
-          SELECT root_ticket_id FROM sla_report
-        )
-        AND NOT EXISTS (
-          SELECT root_ticket_id FROM sla_report
-          EXCEPT
-          SELECT root_ticket_id FROM thread_summary
-        )
-        AS TEXT
-      )
-    )
-  );
-
-INSERT INTO audit_summary
-SELECT
-  'status',
-  CASE
-    WHEN MIN(CAST(metric_value AS INTEGER)) = 1
-    THEN (SELECT ready_status FROM runtime_contract)
-    ELSE (SELECT blocked_status FROM runtime_contract)
-  END
-FROM audit_summary
-WHERE metric_key LIKE 'check.%';
+  ('result.auto_escalate_hits', (SELECT COALESCE(SUM(auto_escalate_hits), 0) FROM thread_summary));
 
 COMMIT;
 
@@ -480,7 +429,6 @@ ORDER BY ticket_id;
 .mode list
 .once output/reports/audit_summary.json
 SELECT json_object(
-  'status', (SELECT metric_value FROM audit_summary WHERE metric_key = 'status'),
   'report_cutoff_utc', (SELECT metric_value FROM audit_summary WHERE metric_key = 'config.report_cutoff_utc'),
   'source', json_object(
     'ticket_rows', CAST((SELECT metric_value FROM audit_summary WHERE metric_key = 'source.ticket_rows') AS INTEGER),
@@ -496,11 +444,6 @@ SELECT json_object(
     'response_breaches', CAST((SELECT metric_value FROM audit_summary WHERE metric_key = 'result.response_breaches') AS INTEGER),
     'resolve_breaches', CAST((SELECT metric_value FROM audit_summary WHERE metric_key = 'result.resolve_breaches') AS INTEGER),
     'auto_escalate_hits', CAST((SELECT metric_value FROM audit_summary WHERE metric_key = 'result.auto_escalate_hits') AS INTEGER)
-  ),
-  'checks', json_object(
-    'all_queues_mapped', json(CASE (SELECT metric_value FROM audit_summary WHERE metric_key = 'check.all_queues_mapped') WHEN '1' THEN 'true' ELSE 'false' END),
-    'exceptions_excluded', json(CASE (SELECT metric_value FROM audit_summary WHERE metric_key = 'check.exceptions_excluded') WHEN '1' THEN 'true' ELSE 'false' END),
-    'thread_sla_roots_match', json(CASE (SELECT metric_value FROM audit_summary WHERE metric_key = 'check.thread_sla_roots_match') WHEN '1' THEN 'true' ELSE 'false' END)
   )
 );
 

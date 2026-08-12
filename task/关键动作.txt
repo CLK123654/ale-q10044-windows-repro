@@ -5,5 +5,5 @@
 用json_each展开rule_hits并关联rule_catalog，按线程和规则归集命中与自动升级。
 汇总线程成员、开放状态、严重级别、地区、队列、责任团队和事件时间边界。
 用unixepoch计算首次响应与最后终态相对线程起点的分钟差，再关联sla_policy判断时效。
-从派生表导出四份CSV和audit_summary.json，核对根线程集合、责任归属和控制量。
+从派生表导出四份CSV和audit_summary.json，核对根线程集合、责任归属和业务计数。
 运行npm run audit重建交付物，确认四张源表保持原样，数据库与报告口径一致。

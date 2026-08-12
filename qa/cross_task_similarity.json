@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "gate": "cross_task_similarity",
+  "current_qid": "10044",
   "comparison_count": 217,
   "same_software_comparison_count": 45,
   "method": "NFKC归一化后计算标题3字片段和正文5字片段Dice相似度",
@@ -8,11 +9,61 @@
     "title": 0.72,
     "body": 0.55
   },
-  "maximum_observed": {
-    "title": 0.2326,
-    "body": 0.0638
-  },
-  "threshold_hit_count": 0,
+  "all_tasks_top_five": [
+    {
+      "qid": "13762",
+      "title_score": 0.2326,
+      "body_score": 0.0072
+    },
+    {
+      "qid": "13749",
+      "title_score": 0.2273,
+      "body_score": 0.0138
+    },
+    {
+      "qid": "13717",
+      "title_score": 0.2041,
+      "body_score": 0.0369
+    },
+    {
+      "qid": "10528",
+      "title_score": 0.2,
+      "body_score": 0.0638
+    },
+    {
+      "qid": "11251",
+      "title_score": 0.2,
+      "body_score": 0.027
+    }
+  ],
+  "same_software_top_five": [
+    {
+      "qid": "13762",
+      "title_score": 0.2326,
+      "body_score": 0.0072
+    },
+    {
+      "qid": "13749",
+      "title_score": 0.2273,
+      "body_score": 0.0138
+    },
+    {
+      "qid": "13717",
+      "title_score": 0.2041,
+      "body_score": 0.0369
+    },
+    {
+      "qid": "10528",
+      "title_score": 0.2,
+      "body_score": 0.0638
+    },
+    {
+      "qid": "11251",
+      "title_score": 0.2,
+      "body_score": 0.027
+    }
+  ],
+  "threshold_hits": [],
   "pass": true,
   "final_global_rescan_required": true
 }

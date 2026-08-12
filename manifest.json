@@ -6,10 +6,10 @@
   "sqlite_release": "3.51.2",
   "entrypoint": "npm run audit",
   "attachments": {
-    "输入数据包.zip": "372cac4d82a804a1cdb9b55eab1465d00e003f6c31fbd128f6ed80de82e47bb6",
-    "reference.zip": "d45ebde02728c626d412e2739a46d681f23cc18e500995518aa99e84d160bcfa",
-    "关键标准答案.xlsx": "cca2b5abf47ba5163d6c4e5e35e703c63e271c70160b8a3d932608193a930f0d",
-    "任务规格转化.xlsx": "0f782108e491327e816c74bb0d5b0b984318b694716fd63618a444160f8f8593"
+    "输入数据包.zip": "f43229c3422c4c259abead1ac935cf7ec174a87a6957853baca2f7480b73d8fe",
+    "reference.zip": "8b3d6d96014a085ab1dcbe7d23b5787f88c130d8936201b8cd7b614a3df48fb9",
+    "关键标准答案.xlsx": "d137865cca28d745f733b53a678aaea0f9bd187459ea0376474d3538790f737a",
+    "任务规格转化.xlsx": "2dfed38af259bac4a9fc3d357d4a4af8da13cf90725a00ccacc549dbaab9b431"
   },
   "input_members": [
     "input_data/",

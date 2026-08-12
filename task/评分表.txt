@@ -3,8 +3,8 @@
 关键字段：output/appeal_thread_audit.db、output/sql/rebuild_appeal_audit.sql、output/reports
 容差：交付路径来自任务Prompt；SQL缩进、注释和临时对象名称可以不同。
 失败边界：核心文件缺失或损坏，四张源表被改动，五张派生表缺失，或核心结果由其它数据库生成。
-可观察证据：压缩包成员、PRAGMA integrity_check、sqlite_schema以及四张源表的逐行对照
-客观硬性标准：七个交付文件可读取，数据库完整性返回ok，四张源表与输入库相同，五张派生表均存在。
+可观察证据：规定交付路径、PRAGMA integrity_check、sqlite_schema以及四张源表的逐行对照
+客观硬性标准：任务Prompt规定的交付文件均可读取，数据库完整性返回ok，源表与输入库相同，规定的派生表均存在。
 阈值：上述四个条件全部成立。
 优先级：Gate项
 所属层级：L1任务指令遵循层
@@ -13,7 +13,7 @@
 标准答案：运行入口读取content_appeals.db、report_contract.json和queue_assignments.csv，把规则合同与队列映射导入同一SQLite会话，并由sqlite3或sqlite3.exe执行交付SQL。Node.js只负责输入准备、进程调用和文件收尾。
 关键字段：input_data/database/content_appeals.db、input_data/rules/report_contract.json、input_data/rules/queue_assignments.csv、input_data/tools/run-task.mjs
 容差：SQLite可执行文件可从PATH或SQLITE3_PATH取得；辅助变量、函数和临时表名称可以变化。
-失败边界：任一业务输入未使用，报告来自预制内容，Node.js代替SQLite计算父链、规则汇总或SLA，或正式运行访问外部服务。
+失败边界：任一业务输入未使用，派生表未由SQLite执行交付SQL生成，Node.js代替SQLite计算父链、规则汇总或SLA，或正式运行访问外部服务。
 可观察证据：入口源码、进程日志、SQL建立的派生表，以及报告中的截止时间和责任团队
 客观硬性标准：三份业务输入均参与运行，真实SQLite进程成功退出，核心派生结果由交付SQL生成，运行期间只访问本地文件。
 阈值：四个条件全部成立。
@@ -21,45 +21,45 @@
 所属层级：L2软件或工具操作层
 
 检查项：父链归并和异常隔离
-标准答案：根线程集合为T100、T102、T103、T104、T106，有效工单集合为T100、T101、T102、T103、T104、T105、T106、T107。quality_exceptions中T108对应orphan_parent，T109和T110对应cycle_detected；三张异常工单不进入正式线程、规则或SLA结果。
+标准答案：SQL沿parent_ticket_id向上追溯根工单。父级缺失与父链循环分别使用report_contract.json规定的issue_code写入quality_exceptions；异常工单不进入线程、规则或SLA结果。
 关键字段：output/sql/rebuild_appeal_audit.sql、output/appeal_thread_audit.db中的quality_exceptions和thread_summary
 容差：按ticket_id比较集合，行序不计分；异常代码来自rules/report_contract.json，工单关系来自appeal_ticket.parent_ticket_id。
 失败边界：递归无法结束，根线程或有效工单集合错误，异常类型错误，或异常工单参与正式统计。
 可观察证据：WITH RECURSIVE语句、quality_exceptions.csv、派生数据库中的线程表和父链查询
-客观硬性标准：五个根线程、八张有效工单和三条异常逐项吻合，循环链能够安全收口。
+客观硬性标准：每张可归并工单只对应一个根线程，异常分类能由父链复算，异常工单与正式结果没有交集，循环链能够安全收口。
 阈值：四个结果全部正确。
 优先级：高权重项
 所属层级：L4数据清洗与质量控制层
 
 检查项：规则展开和责任团队关联
-标准答案：SQL用json_each展开payload_json中的rule_hits并关联rule_catalog。rule_rollup按priority降序、rule_code升序排列SELF_HARM、HATE、FRAUD、IP、SPAM。HATE的ticket_count、thread_count、event_count、auto_escalate_count依次为3、2、3、3，FRAUD依次为2、1、2、2。thread_summary中T100、T102、T103、T104、T106的queues和owner_teams依次为trust与integrity_ops、copyright与rights_ops、safety与safety_ops、trust与integrity_ops、commerce与risk_ops。
+标准答案：SQL用json_each展开payload_json中的rule_hits并关联rule_catalog。rule_rollup按priority降序、rule_code升序，分别统计工单、根线程、事件和自动升级次数。thread_summary中的队列来自有效工单，责任团队由queue_assignments.csv关联取得。
 关键字段：output/sql/rebuild_appeal_audit.sql、reports/rule_rollup.csv、reports/thread_summary.csv、rules/queue_assignments.csv
 容差：线程和规则按业务主键比较，CSV行序不计分；计数不设容差，来源为ticket_event.payload_json、rule_catalog和队列映射。
 失败边界：用字符串搜索代替JSON展开，多规则事件漏算，异常工单进入汇总，规则计数错误，或责任团队不是从队列文件取得。
 可观察证据：json_each调用、rule_rollup.csv及thread_summary.csv中的queues和owner_teams
-客观硬性标准：五条规则的业务顺序正确，两条重点规则的四项计数正确，五个线程的队列和责任团队全部匹配。
+客观硬性标准：规则顺序符合rule_catalog，四项规则计数能从事件展开结果复算，每个有效线程的队列和责任团队均与映射文件一致。
 阈值：三组结果全部正确。
 优先级：高权重项
 所属层级：L5多源关联与字段一致性层
 
 检查项：线程摘要和SLA时效
-标准答案：thread_summary有五条唯一根线程。T100的ticket_count、rule_hit_count、auto_escalate_hits为2、2、1；T103为2、3、3；T104的open_ticket_count为1；T106的regions为SG，rule_hit_count和auto_escalate_hits均为2。sla_report中T100的响应与解决分钟为12和60且均未超时，T102为80和155且仅响应超时，T103为45和195且两项超时，T104为180和空值且仅响应超时，T106为10和80且均未超时。
+标准答案：thread_summary按root_ticket_id保留一行，成员、开放状态、严重级别、地区、队列、责任团队、事件边界和规则命中都从该线程的有效工单计算。sla_report从线程最早创建时间计算首次响应和最后终态；开放且未响应的线程使用report_cutoff_utc，阈值取自sla_policy。
 关键字段：reports/thread_summary.csv、reports/sla_report.csv、appeal_ticket、ticket_event、sla_policy
 容差：分钟按UTC整分计算，不设数值容差；记录按root_ticket_id比较，阈值来自sla_policy，开放线程截止时间来自report_contract.json。
 失败边界：根线程重复或缺失，分钟受本地时区影响，开放未响应线程没有使用截止时间，子工单终态遗漏，或最高严重级别选择错误。
 可观察证据：unixepoch表达式、两个CSV、派生表及源事件时间
-客观硬性标准：线程摘要控制值、五组分钟数和每组超时标记均与标准答案一致。
+客观硬性标准：线程摘要字段可从成员工单与事件复算，分钟值符合UTC整分口径，响应与解决超时标记符合对应严重级别的政策阈值。
 阈值：三类结果全部正确。
 优先级：高权重项
 所属层级：L6领域计算与专业规则层
 
 检查项：审计摘要和跨文件对账
-标准答案：audit_summary.json的status为ready，report_cutoff_utc为2026-07-30T14:00:00Z。source中的ticket_rows、event_rows、queue_assignment_rows为11、23、4；result中的thread_rows、valid_ticket_rows、exception_rows、rule_rows、sla_rows、response_breaches、resolve_breaches、auto_escalate_hits为5、8、3、5、5、3、1、6；checks下三个布尔值均为true。
+标准答案：audit_summary.json的report_cutoff_utc与report_contract.json一致。source记录工单、事件和队列映射行数；result记录有效线程、有效工单、异常、规则、SLA、超时和自动升级数量。每项计数都能从数据库或对应CSV复算。
 关键字段：reports/audit_summary.json、四份CSV和appeal_thread_audit.db中的audit_summary
-容差：JSON键序不计分，整数和UTC时间不设容差；status字面值来自report_contract.json，所有计数可从数据库与CSV复算。
-失败边界：摘要与派生表冲突，任一队列没有负责人，异常工单进入有效映射，线程与SLA根集合不同，或检查失败仍标为ready。
+容差：JSON键序不计分，整数和UTC时间不设容差；所有计数可从数据库与CSV复算。
+失败边界：摘要与派生表冲突，队列责任团队不完整，异常工单进入有效映射，或线程与SLA根集合不同。
 可观察证据：JSONPath、SQLite计数查询、CSV业务主键集合和audit_summary表
-客观硬性标准：状态、截止时间、十一项计数和三个检查结果逐项正确，数据库与报告口径一致。
-阈值：四类内容全部吻合。
+客观硬性标准：截止时间取值正确，摘要字段齐全，各项计数与数据库及四份CSV一致。
+阈值：三类内容全部吻合。
 优先级：普通项
 所属层级：L9跨产物一致性与可追溯层
