@@ -8,4 +8,4 @@ SQLite下载页：
 
 https://www.sqlite.org/download.html
 
-Node.js由GitHub Actions的setup-node动作安装，主版本固定为24。
+数据处理入口使用Node.js24LTS，版本与运行条件以任务环境依赖为准。
