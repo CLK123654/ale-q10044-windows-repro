@@ -6,6 +6,6 @@
 
 在Windows PowerShell中执行：
 
-    ./scripts/windows_gate.ps1 -RepositoryRoot $PWD -EvidenceRoot $env:TEMP/ale-q10044-evidence -ReferenceBuildRoot $env:TEMP/ale-q10044-output
+    ./scripts/windows_gate.ps1 -RepositoryRoot $PWD -EvidenceRoot $env:TEMP/ale-q10044-evidence
 
 SQLite安装阶段需要联网。业务运行阶段只读取本地文件，不访问外部服务。

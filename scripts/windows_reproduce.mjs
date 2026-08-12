@@ -13,7 +13,6 @@ function argumentValue(name) {
 
 const repositoryRoot = argumentValue('--repository-root');
 const evidenceRoot = argumentValue('--evidence-root');
-const referenceBuildRoot = argumentValue('--reference-build-root');
 const artifactsRoot = path.join(repositoryRoot, 'artifacts');
 const manifest = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'manifest.json'), 'utf8'));
 const inputZip = path.join(artifactsRoot, '输入数据包.zip');
@@ -23,6 +22,7 @@ const specificationBook = path.join(artifactsRoot, '任务规格转化.xlsx');
 const candidateSql = path.join(repositoryRoot, 'candidate', 'rebuild_appeal_audit.sql');
 const sqlitePath = process.env.SQLITE3_PATH;
 const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'ale-sqlite-audit-'));
+const referenceRoot = path.join(sandbox, '正式 交付');
 fs.mkdirSync(evidenceRoot, { recursive: true });
 
 function run(command, args, options = {}) {
@@ -143,12 +143,6 @@ function compareDatabase(actual, expected) {
   }
 }
 
-function copyTree(source, destination) {
-  fs.rmSync(destination, { recursive: true, force: true });
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  fs.cpSync(source, destination, { recursive: true });
-}
-
 const expectedPaths = [
   'appeal_thread_audit.db',
   'sql/rebuild_appeal_audit.sql',
@@ -236,6 +230,12 @@ async function main() {
     throw new Error(`Expected SQLite ${manifest.sqlite_release}, received ${sqliteVersion}`);
   }
 
+  extract(referenceZip, referenceRoot);
+  const expectedRoot = path.join(referenceRoot, 'output');
+  if (sha256(candidateSql) !== sha256(path.join(expectedRoot, 'sql', 'rebuild_appeal_audit.sql'))) {
+    throw new Error('Candidate SQL does not match the final delivery SQL');
+  }
+
   const artifacts = Object.fromEntries([
     ['输入数据包.zip', inputZip],
     ['reference.zip', referenceZip],
@@ -247,19 +247,13 @@ async function main() {
   }
 
   const cleanRoomRuns = [];
-  let expectedRoot;
   for (const [name, logName] of [['运营 审计甲', 'clean-a.log'], ['运营 审计乙', 'clean-b.log']]) {
     const prepared = prepareRun(name);
     const before = fileHashes(prepared.inputRoot);
     const first = executeAudit(prepared.inputRoot);
     if (first.status !== 0) throw new Error(`${name} first run failed\n${first.stderr}`);
     const actualRoot = path.join(prepared.inputRoot, 'output');
-    if (!expectedRoot) {
-      copyTree(actualRoot, path.join(referenceBuildRoot, 'output'));
-      expectedRoot = path.join(referenceBuildRoot, 'output');
-    } else {
-      compareOutputs(actualRoot, expectedRoot);
-    }
+    compareOutputs(actualRoot, expectedRoot);
     const firstOutputHashes = fileHashes(path.join(prepared.inputRoot, 'output'));
     const second = executeAudit(prepared.inputRoot);
     if (second.status !== 0) throw new Error(`${name} second run failed\n${second.stderr}`);

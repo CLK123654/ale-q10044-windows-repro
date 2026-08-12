@@ -3,9 +3,7 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$RepositoryRoot,
   [Parameter(Mandatory = $true)]
-  [string]$EvidenceRoot,
-  [Parameter(Mandatory = $true)]
-  [string]$ReferenceBuildRoot
+  [string]$EvidenceRoot
 )
 
 $ErrorActionPreference = 'Stop'
@@ -190,7 +188,7 @@ Assert-NoPublicMetadata
 Assert-True (-not [string]::IsNullOrWhiteSpace($env:SQLITE3_PATH)) 'SQLITE3_PATH is missing'
 Assert-True (Test-Path -LiteralPath $env:SQLITE3_PATH -PathType Leaf) 'sqlite3 executable is missing'
 $nodeScript = Join-Path $RepositoryRoot 'scripts/windows_reproduce.mjs'
-& node $nodeScript --repository-root $RepositoryRoot --evidence-root $EvidenceRoot --reference-build-root $ReferenceBuildRoot
+& node $nodeScript --repository-root $RepositoryRoot --evidence-root $EvidenceRoot
 $nodeExit = $LASTEXITCODE
 Assert-True ($nodeExit -eq 0) "Windows reproduction failed with exit code $nodeExit"
 
