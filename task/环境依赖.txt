@@ -1,5 +1,7 @@
-操作系统：Windows11、macOS或主流64位Linux。主软件为SQLite，使用支持本题窗口函数、JSON函数和完整性查询的SQLite3.51或更高兼容版本。Node.js24LTS负责调用SQLite命令行程序和整理报表；Windows11可在PowerShell中运行，不依赖WSL、容器或POSIX Shell。
+操作系统：Windows11、macOS或主流64位Linux。
+
+主软件为SQLite，使用支持本题窗口函数、JSON函数和完整性查询的SQLite3.51或更高兼容版本。Node.js24LTS负责调用SQLite命令行程序和整理报表；Windows11可在PowerShell中运行，不依赖WSL、容器或POSIX Shell。
 
 处理期间只读取本地input_data。输入数据库和规则文件保持只读，output目录需要创建、覆盖和删除文件的权限。正式运行不连接外部数据库或工单系统。
 
-当前申诉数据适合普通64位多核CPU和常规办公内存，不使用GPU。磁盘应能容纳输入数据库、SQLite临时文件、目标数据库和报表。入口应设置有限超时；超时后检查递归父链、窗口查询或数据库文件锁。
+当前申诉数据适合普通64位多核CPU和常规办公内存，不使用GPU。磁盘应能容纳输入数据库、SQLite临时文件、目标数据库和报表。需设置有限超时，覆盖本题批次处理并避免异常无限等待。
